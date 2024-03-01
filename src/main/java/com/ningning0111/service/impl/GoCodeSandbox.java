@@ -13,15 +13,15 @@ import java.io.File;
  * @Project: com.ningning0111.service.impl
  * @Author: pgthinker
  * @GitHub: https://github.com/ningning0111
- * @Date: 2024/3/1 00:30
+ * @Date: 2024/3/2 01:43
  * @Description:
  */
 @RequiredArgsConstructor
-@Component("cppCodeSandbox")
+@Component("goCodeSandbox")
 @Slf4j
-public class CppCodeSandbox extends AbstractCodeSandbox {
+public class GoCodeSandbox extends AbstractCodeSandbox {
 
-    // todo: C++代码在容器中执行的实现
+    // todo: Go在容器中的代码实现
 
     @Override
     public String getCodeDirPath(String workDir) {
