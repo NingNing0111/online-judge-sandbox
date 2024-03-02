@@ -5,6 +5,8 @@ import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.PullResponseItem;
+import com.ningning0111.config.SandboxConfig;
+import com.ningning0111.config.SandboxFullConfig;
 import com.ningning0111.model.ExecuteCodeRequest;
 import com.ningning0111.model.ExecuteCodeResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Project: com.ningning0111.service
@@ -29,10 +29,11 @@ public class SandboxService {
 
     private final SandboxFactory sandboxFactory;
     private final DockerClient dockerClient;
+    private final SandboxFullConfig sandboxFullConfig;
 
     @PostConstruct
     public void init() {
-        String imageName = "openjdk:8-alpine";
+        String imageName = sandboxFullConfig.getSandboxConfig().getImageName();
         PullImageCmd pullImageCmd = dockerClient.pullImageCmd(imageName);
         PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
             @Override

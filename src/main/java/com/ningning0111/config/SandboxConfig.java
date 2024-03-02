@@ -43,5 +43,4 @@ public class SandboxConfig {
      */
     @Value("${:1}")
     private Long cpuCount;
-
 }

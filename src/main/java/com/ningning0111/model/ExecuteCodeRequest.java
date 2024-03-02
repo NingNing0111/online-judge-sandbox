@@ -20,11 +20,17 @@ import java.util.List;
 @AllArgsConstructor
 public class ExecuteCodeRequest {
 
-    // 输入数据
+    /**
+     * 输入数据
+     */
     private List<String> input;
-    // 代码
+    /**
+     * 代码
+      */
     private String code;
-    // 语言
+    /**
+     * 语言
+     */
     private String language;
 
 }
