@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,15 +22,6 @@ class OjLuddSandboxApplicationTests {
 	private SandboxFullConfig sandboxConfig;
 	@Autowired
 	private SandboxService sandboxService;
-	@Autowired
-	private DockerClient dockerClient;
-
-
-	@Test
-	void contextLoads() {
-		System.out.println(sandboxConfig);
-	}
-
 	@Test
 	public void testSandbox(){
 		ExecuteCodeRequest request = new ExecuteCodeRequest();
@@ -48,7 +40,8 @@ class OjLuddSandboxApplicationTests {
 				"        }\n" +
 				"    }\n" +
 				"}\n");
-		request.setInput("3\n1\n2\n4\n");
+		String input = "3\n1\n2\n4";
+		request.setInput(Arrays.asList(input,"3\n2\n3\n10"));
 		ExecuteCodeResponse execute = sandboxService.execute(request);
 		System.out.println(execute);
 	}

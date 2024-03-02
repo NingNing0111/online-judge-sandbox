@@ -1,11 +1,13 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
 
 public class Solution {
     public static void main(String[] args) {
-        List<byte[]> bytes = new ArrayList<>();
-        while (true) {
-            bytes.add(new byte[10000]);
+        Scanner scan = new Scanner(System.in);
+        int n = scan.nextInt();
+        while (n != 0){
+            int i = scan.nextInt();
+            System.out.println(i);
+            n--;
         }
     }
 }

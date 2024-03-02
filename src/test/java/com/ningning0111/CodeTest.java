@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
+
 /**
  * @Project: com.ningning0111
  * @Author: pgthinker
@@ -33,7 +35,7 @@ public class CodeTest {
                 ExecuteCodeRequest.builder()
                         .code(code)
                         .language("java")
-                        .input("")
+                        .input(Arrays.asList("123"))
                         .build()
         );
         System.out.println(execute);
@@ -50,7 +52,7 @@ public class CodeTest {
                 ExecuteCodeRequest.builder()
                         .code(code)
                         .language("java")
-                        .input("123")
+                        .input(Arrays.asList("123"))
                         .build()
         );
         System.out.println(execute);

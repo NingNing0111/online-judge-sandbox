@@ -10,8 +10,7 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.StreamType;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
-import com.ningning0111.model.ProcessExecuteInfo;
-import com.ningning0111.model.enums.ExecuteStatus;
+import com.ningning0111.model.CmdExecuteInfo;
 import org.springframework.util.StopWatch;
 
 import java.io.Closeable;
@@ -44,26 +43,29 @@ public class DockerUtils {
         return execCmdResponse;
     }
 
-    public static ProcessExecuteInfo getProcessExecInfo(
+    /**
+     * 获取Docker运行指令后的进程信息
+     * @param execCmdResponse
+     * @param dockerClient
+     * @param containerId
+     * @param maxTime 指令运行时的最大时间限制 单位milliseconds
+     * @return 时间、内存、输出结果和错误信息
+     */
+    public static CmdExecuteInfo getProcessExecInfo(
             ExecCreateCmdResponse execCmdResponse,
             DockerClient dockerClient,
             String containerId,
-            long maxTime,
-            TimeUnit timeUnit
+            long maxTime
     ) {
-        if(timeUnit != TimeUnit.MILLISECONDS){
-            maxTime = timeUnit.toMillis(maxTime);
-        }
         StopWatch stopWatch = new StopWatch();
-        ProcessExecuteInfo executeInfo = new ProcessExecuteInfo();
+        CmdExecuteInfo cmdExecuteInfo = new CmdExecuteInfo();
         final String[] errMessage = {null};
         // 记录程序执行耗时
         long time = 0L;
-        // 判断程序是否正常执行
         // 程序执行结果
         final String[] result = {""};
 
-        // 判断是否超时
+        // 1. 判断是否超时
         String execId = execCmdResponse.getId();
         ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback(){
             @Override
@@ -78,7 +80,7 @@ public class DockerUtils {
                 super.onNext(frame);
             }
         };
-        // 获取内存数据
+        // 2. 获取内存数据
         final Long[] maxMemory = {0L};
         StatsCmd statsCmd = dockerClient.statsCmd(containerId);
         ResultCallback<Statistics> callback = statsCmd.exec(new ResultCallback<Statistics>() {
@@ -115,7 +117,7 @@ public class DockerUtils {
                     .exec(execStartResultCallback)
                     .awaitCompletion(
                             maxTime,
-                            timeUnit
+                            TimeUnit.MILLISECONDS
                     );
             stopWatch.stop();
             time = stopWatch.getLastTaskTimeMillis();
@@ -123,11 +125,11 @@ public class DockerUtils {
         }catch (InterruptedException e){
             errMessage[0] = e.getMessage();
         }
-        executeInfo.setMessage(result[0]);
-        executeInfo.setErrorMessage(errMessage[0]);
-        executeInfo.setTime(time);
-        executeInfo.setMemory(maxMemory[0]);
-        return executeInfo;
+        cmdExecuteInfo.setMessage(result[0]);
+        cmdExecuteInfo.setErrMessage(errMessage[0]);
+        cmdExecuteInfo.setTime(time);
+        cmdExecuteInfo.setMemory(maxMemory[0]);
+        return cmdExecuteInfo;
     }
 
 

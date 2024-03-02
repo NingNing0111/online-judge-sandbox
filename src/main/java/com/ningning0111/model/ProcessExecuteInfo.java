@@ -2,6 +2,8 @@ package com.ningning0111.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @Project: com.ningning0111.model
  * @Author: pgthinker
@@ -18,7 +20,7 @@ public class ProcessExecuteInfo {
     /**
      * 执行结果信息
      */
-    private String message;
+    private List<String> executeResult;
     /**
      * 执行错误信息
      */

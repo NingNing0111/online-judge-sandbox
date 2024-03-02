@@ -22,12 +22,12 @@ public class ExecuteCodeResponse {
     /**
      *输出数据
      */
-    private String output;
+    private List<String> output;
+
     /**
      * 接口信息
      */
     private String message;
-
     /**
      * 执行状态
      */

@@ -8,6 +8,7 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.*;
 import com.ningning0111.config.SandboxFullConfig;
 import com.ningning0111.exception.ExecuteCodeException;
+import com.ningning0111.model.CmdExecuteInfo;
 import com.ningning0111.model.ProcessExecuteInfo;
 import com.ningning0111.model.enums.ExecuteStatus;
 import com.ningning0111.service.AbstractCodeSandbox;
@@ -17,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,13 +48,16 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
     }
 
     @Override
-    public ProcessExecuteInfo execute(File file) throws ExecuteCodeException {
+    public ProcessExecuteInfo execute(File file, List<String> inputDataList) throws ExecuteCodeException {
         String containerId = null;
         try{
             // 1. 先编译成子节码
             boolean compile = compile(file);
             if(!compile){
-                throw new ExecuteCodeException();
+                ProcessExecuteInfo executeInfo = new ProcessExecuteInfo();
+                executeInfo.setErrorMessage("代码编译不通过");
+                executeInfo.setExitValue(ExecuteStatus.EXECUTE_CODE_ERROR.getStatus());
+                return executeInfo;
             }
             // 2. 再放到容器中执行
             // 2.1 创建容器
@@ -59,7 +65,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
             // 2.2 启动容器
             dockerClient.startContainerCmd(containerId).exec();
             // 2.3 执行命令
-            return executeCmd(containerId);
+            return executeCmd(containerId, inputDataList);
         }catch (Exception e){
             throw new ExecuteCodeException();
         }finally {
@@ -119,47 +125,49 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
     }
 
     /**
-     * docker exec -it c9f /bin/sh -c "java -cp /app Solution < /app/input.in"
+     * docker exec -it c9f /bin/sh -c "java -cp /app Solution < /app/*.in"
      * @param containerId
      * @return
      */
-    private ProcessExecuteInfo executeCmd(String containerId) {
+    private ProcessExecuteInfo executeCmd(String containerId, List<String> inputDataList) {
+        // 获取Java程序的文件名称
         String fileName = sandboxFullConfig.getJavaConfig().getFileName();
         int endIndex = fileName.lastIndexOf(".java");
         String cmdFileName = fileName.substring(0, endIndex);
-        String[] args = new String[]{"sh","-c","java -cp /app " + cmdFileName + " < /app/input.in"};
-        // 创建指令执行对象
-        ExecCreateCmdResponse execCmdResponse = DockerUtils.createCmdResponse(dockerClient, args, containerId);
-        // 获取Docker的执行进程信息
-        ProcessExecuteInfo processExecInfo = DockerUtils.getProcessExecInfo(
-                execCmdResponse,
-                dockerClient,
-                containerId,
-                sandboxFullConfig.getJavaConfig().getExecuteMaxTime(),
-                TimeUnit.MILLISECONDS
-        );
-//        log.error("获取到的进程信息:{}",processExecInfo);
 
-        if(processExecInfo.getErrorMessage() != null){
-            processExecInfo.setExitValue(ExecuteStatus.EXECUTE_SYSTEM_ERROR.getStatus());
-            return processExecInfo;
+        ProcessExecuteInfo processExecInfo = new ProcessExecuteInfo();
+        // 输出结果
+        List<String> outputDataList = new ArrayList<>();
+        // 最大时间
+        Long maxTime = 0L;
+        // 最大内存
+        Long maxMemory = 0L;
+        for (int i = 0; i < inputDataList.size(); i++ ){
+            String[] args = new String[]{"sh","-c","java -cp /app " + cmdFileName + " < /app/"+(i+1)+".in"};
+            // 创建指令执行对象
+            ExecCreateCmdResponse execCmdResponse =
+                   DockerUtils.createCmdResponse(dockerClient, args, containerId);
+            // 获取Docker的执行进程信息
+            CmdExecuteInfo cmdExecuteInfo = DockerUtils.getProcessExecInfo(
+                   execCmdResponse,
+                   dockerClient,
+                   containerId,
+                   sandboxFullConfig.getJavaConfig().getExecuteMaxTime()
+            );
+            String errMessage = cmdExecuteInfo.getErrMessage();
+            if(errMessage != null){
+                processExecInfo.setErrorMessage(errMessage);
+                processExecInfo.setExitValue(ExecuteStatus.EXECUTE_SYSTEM_ERROR.getStatus());
+                return processExecInfo;
+            }
+            maxTime = Math.max(cmdExecuteInfo.getTime(),maxTime);
+            maxMemory = Math.max(cmdExecuteInfo.getMemory(),maxMemory);
+            outputDataList.add(cmdExecuteInfo.getMessage());
         }
-        // 获取消耗的时间
-        Long time = processExecInfo.getTime();
-        if(time >= sandboxFullConfig.getJavaConfig().getExecuteMaxTime()){
-            processExecInfo.setExitValue(ExecuteStatus.EXECUTE_TIMEOUT.getStatus());
-            processExecInfo.setMessage(ExecuteStatus.EXECUTE_TIMEOUT.name());
-            return processExecInfo;
-        }
-        // 获取内存大小
-        Long memory = processExecInfo.getMemory();
-        log.error("最大内存大小：{}",memory);
-        if(memory >= sandboxFullConfig.getSandboxConfig().getMaxMemory() - 1048576L){
-            processExecInfo.setExitValue(ExecuteStatus.EXECUTE_MEMORY_LIMIT_EXCEEDED.getStatus());
-            processExecInfo.setMessage(ExecuteStatus.EXECUTE_MEMORY_LIMIT_EXCEEDED.name());
-            return processExecInfo;
-        }
-        processExecInfo.setExitValue(ExecuteStatus.EXECUTE_PASS.getStatus());
+        processExecInfo.setTime(maxTime);
+        processExecInfo.setMemory(maxMemory);
+        processExecInfo.setExecuteResult(outputDataList);
+        processExecInfo.setExitValue(ExecuteStatus.EXECUTE_OK.getStatus());
         return processExecInfo;
     }
 
