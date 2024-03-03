@@ -1,4 +1,6 @@
 server:
   port: 8329
+sandbox:
+  secret-key: 123123
 
 

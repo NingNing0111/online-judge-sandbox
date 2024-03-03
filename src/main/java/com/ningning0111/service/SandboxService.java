@@ -3,10 +3,8 @@ package com.ningning0111.service;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.PullImageResultCallback;
-import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.ningning0111.config.SandboxConfig;
-import com.ningning0111.config.SandboxFullConfig;
 import com.ningning0111.model.ExecuteCodeRequest;
 import com.ningning0111.model.ExecuteCodeResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +27,11 @@ public class SandboxService {
 
     private final SandboxFactory sandboxFactory;
     private final DockerClient dockerClient;
-    private final SandboxFullConfig sandboxFullConfig;
+    private final SandboxConfig sandboxConfig;
 
     @PostConstruct
     public void init() {
-        String imageName = sandboxFullConfig.getSandboxConfig().getImageName();
+        String imageName = sandboxConfig.getImageName();
         PullImageCmd pullImageCmd = dockerClient.pullImageCmd(imageName);
         PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
             @Override

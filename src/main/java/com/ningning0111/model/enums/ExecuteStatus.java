@@ -17,6 +17,7 @@ public enum ExecuteStatus {
      * 程序代码错误
      */
     EXECUTE_CODE_ERROR(2),
+    EXECUTE_AUTH_ERROR(4),
     /**
      * 系统错误
      */

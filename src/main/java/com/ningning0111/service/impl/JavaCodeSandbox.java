@@ -6,7 +6,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.*;
-import com.ningning0111.config.SandboxFullConfig;
+import com.ningning0111.config.SandboxConfig;
 import com.ningning0111.exception.ExecuteCodeException;
 import com.ningning0111.model.CmdExecuteInfo;
 import com.ningning0111.model.ProcessExecuteInfo;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Project: com.ningning0111.service
@@ -34,17 +33,17 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class JavaCodeSandbox extends AbstractCodeSandbox {
 
-    private final SandboxFullConfig sandboxFullConfig;
     private final DockerClient dockerClient;
+    private final SandboxConfig sandboxConfig;
 
     @Override
     public String getCodeDirPath(String workDir) {
-        return workDir + File.separator + sandboxFullConfig.getCodeDirName();
+        return workDir + File.separator + sandboxConfig.getCodeDirName();
     }
 
     @Override
     public String getCodeFilePath(String parentPath) {
-        return parentPath + File.separator + sandboxFullConfig.getJavaConfig().getFileName();
+        return parentPath + File.separator + sandboxConfig.getJavaFileName();
     }
 
     @Override
@@ -55,7 +54,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
             boolean compile = compile(file);
             if(!compile){
                 ProcessExecuteInfo executeInfo = new ProcessExecuteInfo();
-                executeInfo.setErrorMessage("代码编译不通过");
+                executeInfo.setErrorMessage("Compile Error");
                 executeInfo.setExitValue(ExecuteStatus.EXECUTE_CODE_ERROR.getStatus());
                 return executeInfo;
             }
@@ -105,11 +104,11 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
     private String initContainer(File codeFile){
         String codeFileAbsolutePath = codeFile.getParentFile().getAbsolutePath();
         CreateContainerCmd containerCmd = dockerClient.createContainerCmd(
-                sandboxFullConfig.getSandboxConfig().getImageName()
+                sandboxConfig.getImageName()
         );
         HostConfig hostConfig = new HostConfig();
-        hostConfig.withMemory(sandboxFullConfig.getSandboxConfig().getMaxMemory());
-        hostConfig.withCpuCount(sandboxFullConfig.getSandboxConfig().getCpuCount());
+        hostConfig.withMemory(sandboxConfig.getMaxMemory());
+        hostConfig.withCpuCount(sandboxConfig.getCpuCount());
         hostConfig.setBinds(new Bind(codeFileAbsolutePath, new Volume("/app")));
 
         CreateContainerResponse createContainerResponse = containerCmd
@@ -131,7 +130,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
      */
     private ProcessExecuteInfo executeCmd(String containerId, List<String> inputDataList) {
         // 获取Java程序的文件名称
-        String fileName = sandboxFullConfig.getJavaConfig().getFileName();
+        String fileName = sandboxConfig.getJavaFileName();
         int endIndex = fileName.lastIndexOf(".java");
         String cmdFileName = fileName.substring(0, endIndex);
 
@@ -152,7 +151,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
                    execCmdResponse,
                    dockerClient,
                    containerId,
-                   sandboxFullConfig.getJavaConfig().getExecuteMaxTime()
+                   sandboxConfig.getMaxTime()
             );
             String errMessage = cmdExecuteInfo.getErrMessage();
             if(errMessage != null){

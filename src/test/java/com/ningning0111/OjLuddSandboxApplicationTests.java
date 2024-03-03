@@ -1,8 +1,5 @@
 package com.ningning0111;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Image;
-import com.ningning0111.config.SandboxFullConfig;
 import com.ningning0111.model.ExecuteCodeRequest;
 import com.ningning0111.model.ExecuteCodeResponse;
 import com.ningning0111.service.SandboxService;
@@ -12,14 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 @SpringBootTest
 @Slf4j
 class OjLuddSandboxApplicationTests {
-	@Autowired
-	private SandboxFullConfig sandboxConfig;
 	@Autowired
 	private SandboxService sandboxService;
 	@Test

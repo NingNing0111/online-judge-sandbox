@@ -1,15 +1,14 @@
 package com.ningning0111.config;
 
-import com.ningning0111.config.language.CppConfig;
-import com.ningning0111.config.language.GoConfig;
-import com.ningning0111.config.language.JavaConfig;
-import lombok.AllArgsConstructor;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DockerClientBuilder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.UUID;
 
 /**
  * @Project: com.ningning0111.config
@@ -24,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 public class SandboxConfig {
 
     /**
-     * 代码存储的文件名
+     * 暂存代码的文件名
      */
     @Value("${:tempCode}")
     private String codeDirName;
@@ -39,8 +38,31 @@ public class SandboxConfig {
     @Value("${:104857600}")
     private long maxMemory;
     /**
+     * 运行时的最大等待时间 这里设置为3s
+     */
+    @Value("${:3000}")
+    private long maxTime;
+    /**
      * CPU数
      */
     @Value("${:1}")
     private Long cpuCount;
+    /**
+     * 语言文件名配置
+     */
+    @Value("${:Solution.java}")
+    private String javaFileName;
+    @Value("${:solution.java}")
+    private String cppFileName;
+    @Value("${:solution.go}")
+    private String goFileName;
+
+    /**
+     * 沙盒验证密钥
+     */
+    private String secretKey;
+    @Bean
+    public DockerClient dockerClient(){
+        return DockerClientBuilder.getInstance().build();
+    }
 }

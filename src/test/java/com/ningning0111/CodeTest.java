@@ -57,4 +57,28 @@ public class CodeTest {
         );
         System.out.println(execute);
     }
+
+    @Test
+    public void test3() {
+        String code = "import java.util.Scanner;\n" +
+                "\n" +
+                "public class Solution {\n" +
+                "    public static void main(String[] args) {\n" +
+                "        Scanner scan = new Scanner(System.in);\n" +
+                "        int n = scan.nextInt();\n" +
+                "        while (n != 1){\n" +
+                "            System.out.println(1);\n" +
+                "        }\n" +
+                " System.out.println(n);" +
+                "    }\n" +
+                "}\n";
+        ExecuteCodeResponse execute = sandboxService.execute(
+                ExecuteCodeRequest.builder()
+                        .code(code)
+                        .language("java")
+                        .input(Arrays.asList("1","1","1","2"))
+                        .build()
+        );
+        System.out.println(execute);
+    }
 }
