@@ -1,14 +1,13 @@
 package com.ningning0111.config;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.UUID;
 
 /**
  * @Project: com.ningning0111.config
@@ -57,12 +56,19 @@ public class SandboxConfig {
     @Value("${:solution.go}")
     private String goFileName;
 
+
+    private String dockerHost;
+
     /**
      * 沙盒验证密钥
      */
     private String secretKey;
     @Bean
     public DockerClient dockerClient(){
-        return DockerClientBuilder.getInstance().build();
+        System.err.println(dockerHost);
+        DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost(dockerHost)
+                .build();
+        return DockerClientBuilder.getInstance(config).build();
     }
 }

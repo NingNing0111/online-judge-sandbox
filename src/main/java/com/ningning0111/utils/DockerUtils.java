@@ -51,7 +51,7 @@ public class DockerUtils {
      * @param maxTime 指令运行时的最大时间限制 单位milliseconds
      * @return 时间、内存、输出结果和错误信息
      */
-    public static CmdExecuteInfo getProcessExecInfo(
+    public static synchronized CmdExecuteInfo getProcessExecInfo(
             ExecCreateCmdResponse execCmdResponse,
             DockerClient dockerClient,
             String containerId,
@@ -123,12 +123,16 @@ public class DockerUtils {
             time = stopWatch.getLastTaskTimeMillis();
             statsCmd.close();
         }catch (InterruptedException e){
+            e.printStackTrace();
             errMessage[0] = e.getMessage();
         }
+
         cmdExecuteInfo.setMessage(result[0]);
         cmdExecuteInfo.setErrMessage(errMessage[0]);
         cmdExecuteInfo.setTime(time);
         cmdExecuteInfo.setMemory(maxMemory[0]);
+        time = 0L;
+        maxMemory[0] = 0L;
         return cmdExecuteInfo;
     }
 

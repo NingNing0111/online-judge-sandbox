@@ -63,6 +63,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
             containerId = initContainer(file);
             // 2.2 启动容器
             dockerClient.startContainerCmd(containerId).exec();
+            log.info("容器启动成功:{}",containerId);
             // 2.3 执行命令
             return executeCmd(containerId, inputDataList);
         }catch (Exception e){
@@ -110,7 +111,6 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
         hostConfig.withMemory(sandboxConfig.getMaxMemory());
         hostConfig.withCpuCount(sandboxConfig.getCpuCount());
         hostConfig.setBinds(new Bind(codeFileAbsolutePath, new Volume("/app")));
-
         CreateContainerResponse createContainerResponse = containerCmd
                 .withHostConfig(hostConfig)
                 .withNetworkDisabled(true)
@@ -120,6 +120,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
                 .withAttachStdout(true)
                 .withTty(true)
                 .exec();
+        log.info("容器初始化结果:{}",createContainerResponse);
         return createContainerResponse.getId();
     }
 
@@ -153,6 +154,7 @@ public class JavaCodeSandbox extends AbstractCodeSandbox {
                    containerId,
                    sandboxConfig.getMaxTime()
             );
+            log.info("进程信息:{}",cmdExecuteInfo);
             String errMessage = cmdExecuteInfo.getErrMessage();
             if(errMessage != null){
                 processExecInfo.setErrorMessage(errMessage);

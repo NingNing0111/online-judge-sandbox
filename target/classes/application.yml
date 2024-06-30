@@ -1,0 +1,6 @@
+server:
+  port: 8329
+sandbox:
+  docker-host: ${DOCKER_HOST:tcp://localhost:1334}
+  secret-key: ${SECRET_KEY:} # 默认不开启密钥key校验
+

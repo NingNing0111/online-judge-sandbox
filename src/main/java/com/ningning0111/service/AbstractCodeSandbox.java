@@ -33,7 +33,7 @@ public abstract class AbstractCodeSandbox implements CodeSandbox{
         String code = executeCodeRequest.getCode();
         // 1. 将用户的代码和输入数据保存为文件
         File file = saveCodeToFile(code,inputDataList);
-
+        log.info("输入用例:{}",inputDataList);
         // 2. 执行代码，获取输出结果
         ExecuteCodeResponse executeCodeResponse = null;
         try {

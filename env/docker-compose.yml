@@ -1,0 +1,13 @@
+services:
+  socat:
+    user: root
+    platform: linux/amd64
+    restart: always
+    container_name: sandbox-socat
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 1334:1334
+    image: bobrik/socat
+    command: TCP-LISTEN:1334,fork UNIX-CONNECT:/var/run/docker.sock
+
